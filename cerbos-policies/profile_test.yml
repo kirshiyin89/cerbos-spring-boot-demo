@@ -1,0 +1,91 @@
+name: profileTestSuite
+description: Tests for verifying the profile resource policy
+
+principals:
+  hr:
+    id: hr1
+    roles:
+      - hr
+
+  employee1:
+    id: emp1
+    roles:
+      - employee
+
+  employee2:
+    id: emp2
+    roles:
+      - employee
+
+  employee3:
+    id: emp3
+    roles:
+      - employee
+
+resources:
+  profile:
+    kind: profile
+    id: emp1
+    attr:
+      owner: emp1
+
+  profile2:
+    kind: profile
+    id: emp2
+    attr:
+      owner: emp2
+
+
+
+tests:
+  - name: profile actions
+    input:
+      principals:
+        - employee1
+        - employee2
+        - employee3
+        - hr
+      resources:
+        - profile
+        - profile2
+      actions:
+        - create
+        - read
+        - update
+        - delete
+    expected:
+      - resource: profile
+        principal: employee1
+        actions:
+          create: EFFECT_DENY
+          read: EFFECT_ALLOW
+          update: EFFECT_DENY
+          delete: EFFECT_DENY
+      - resource: profile2
+        principal: employee2
+        actions:
+          create: EFFECT_DENY
+          read: EFFECT_ALLOW
+          update: EFFECT_DENY
+          delete: EFFECT_DENY
+      - resource: profile
+        principal: employee3
+        actions:
+          create: EFFECT_DENY
+          read: EFFECT_DENY
+          update: EFFECT_DENY
+          delete: EFFECT_DENY
+      - resource: profile
+        principal: hr
+        actions:
+          create: EFFECT_ALLOW
+          read: EFFECT_ALLOW
+          update: EFFECT_ALLOW
+          delete: EFFECT_ALLOW
+      - resource: profile2
+        principal: hr
+        actions:
+          create: EFFECT_ALLOW
+          read: EFFECT_ALLOW
+          update: EFFECT_ALLOW
+          delete: EFFECT_ALLOW

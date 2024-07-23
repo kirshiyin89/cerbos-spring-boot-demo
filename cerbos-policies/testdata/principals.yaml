@@ -1,0 +1,9 @@
+principals:
+  employee#1:
+    id: employee#1
+    roles:
+      - employee
+  hr#2:
+    id: hr#2
+    roles:
+      - hr

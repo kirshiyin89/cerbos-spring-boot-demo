@@ -1,0 +1,6 @@
+resources:
+  profile#1:
+    id: profile#1
+    kind: profile
+    attr:
+      owner: 123

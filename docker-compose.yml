@@ -1,0 +1,14 @@
+version: "2.1"
+services:
+  my-cerbos-container:
+    container_name: my-cerbos-container
+    image: ghcr.io/cerbos/cerbos:0.34.0
+    ports:
+      - "3592:3592"
+      - "3593:3593"
+    volumes:
+      - ./cerbos-policies:/policies
+    expose:
+      - "3592"
+      - "3593"
+# uncomment for testing purposes    command: compile /policies

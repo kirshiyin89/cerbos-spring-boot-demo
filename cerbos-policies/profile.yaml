@@ -1,0 +1,36 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: profile
+  version: default
+  rules:
+    - actions:
+        - create
+      effect: EFFECT_ALLOW
+      roles:
+        - user
+        - admin
+        - hr
+    - actions:
+        - read
+      effect: EFFECT_ALLOW
+      roles:
+        - user
+        - admin
+        - employee
+        - hr
+      condition:
+        match:
+          expr: (request.resource.attr.owner == request.principal.id) || ('hr' in request.principal.roles)
+    - actions:
+        - update
+      effect: EFFECT_ALLOW
+      roles:
+        - user
+        - admin
+        - hr
+    - actions:
+        - delete
+      effect: EFFECT_ALLOW
+      roles:
+        - admin
+        - hr
