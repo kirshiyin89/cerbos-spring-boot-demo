@@ -1,0 +1,16 @@
+version: v1.0
+name: Cerbos Policy Execution
+
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu2004
+blocks:
+  - name: Compile Policies
+    task:
+      jobs:
+        - name: Compile
+          commands:
+            - checkout
+            - docker run -it --name my-cerbos-container -v ./cerbos-policies:/policies -p 3592:3592 ghcr.io/cerbos/cerbos:latest compile /policies
+            - docker logs my-cerbos-container
