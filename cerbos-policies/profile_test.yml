@@ -79,7 +79,7 @@ tests:
         principal: hr
         actions:
           create: EFFECT_ALLOW
-          read: EFFECT_DENY
+          read: EFFECT_ALLOW
           update: EFFECT_ALLOW
           delete: EFFECT_ALLOW
       - resource: profile2
