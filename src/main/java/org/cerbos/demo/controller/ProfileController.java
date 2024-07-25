@@ -29,41 +29,7 @@ public class ProfileController {
     private final CerbosBlockingClient cerbosBlockingClient;
 
 
-    @GetMapping("/simple/{profileId}/{employeeId}")
-    public ResponseEntity<String> getProfileSimple(@PathVariable String profileId, @PathVariable String employeeId) {
-
-        Profile profile = profileRepository.findById(Long.parseLong(profileId)).orElse(null);
-
-        if (profile == null) {
-            return ResponseEntity.badRequest().body("Profile not found by ID: " + profileId);
-        }
-        Employee employee = employeeRepository.findById(Long.parseLong(employeeId)).orElse(null);
-
-        if (employee == null) {
-            return ResponseEntity.badRequest().body("Employee not found by ID: " + employeeId);
-        }
-
-        Principal principal = Principal.newInstance(employeeId, employee.getRole());
-
-        Resource resource = Resource.newInstance("profile", profileId);
-
-        CheckResult result = cerbosBlockingClient.check(
-                principal,
-                resource,
-                "read");
-
-        if (!result.isAllowed("read")) {
-            log.debug("Not allowed to read!");
-            return ResponseEntity.status(403).body("Forbidden");
-        } else {
-            log.debug("Allowed to read!");
-            return ResponseEntity.ok().body(profile.getEmployee().toString());
-
-        }
-
-    }
-
-    @GetMapping("/{profileId}/{employeeId}")
+    @GetMapping("/get/{profileId}/{employeeId}")
     public ResponseEntity<String> getProfile(@PathVariable String profileId, @PathVariable String employeeId) {
 
         Profile profile = profileRepository.findById(Long.parseLong(profileId)).orElse(null);
@@ -99,7 +65,7 @@ public class ProfileController {
 
     }
 
-    @DeleteMapping("/{profileId}/{employeeId}")
+    @DeleteMapping("/delete/{profileId}/{employeeId}")
     public ResponseEntity<String> deleteProfile(@PathVariable String profileId, @PathVariable String employeeId) {
         try {
             Profile profile = profileRepository.findById(Long.parseLong(profileId)).orElse(null);

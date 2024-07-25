@@ -11,4 +11,5 @@ services:
     expose:
       - "3592"
       - "3593"
-# uncomment for testing purposes    command: compile /policies
+# uncomment for testing purposes
+#   command: compile /policies
