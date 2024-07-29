@@ -13,11 +13,7 @@ resourcePolicy:
     - actions:
         - read
       effect: EFFECT_ALLOW
-      roles:
-        - user
-        - admin
-        - employee
-        - hr
+      roles: ["*"]
       condition:
         match:
           expr: (request.resource.attr.owner == request.principal.id) || ('hr' in request.principal.roles)

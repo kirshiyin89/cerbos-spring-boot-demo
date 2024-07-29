@@ -12,5 +12,5 @@ blocks:
         - name: Compile
           commands:
             - checkout
-            - docker run -it --name my-cerbos-container -v ./cerbos-policies:/policies -p 3592:3592 ghcr.io/cerbos/cerbos:latest compile /policies
+            - docker run -it --name my-cerbos-container -v ./cerbos-policies:/policies -p 3592:3592 ghcr.io/cerbos/cerbos:0.34.0 compile /policies
             - docker logs my-cerbos-container

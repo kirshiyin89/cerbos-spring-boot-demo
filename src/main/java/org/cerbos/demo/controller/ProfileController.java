@@ -1,7 +1,6 @@
 package org.cerbos.demo.controller;
 
 import dev.cerbos.sdk.CerbosBlockingClient;
-import dev.cerbos.sdk.CheckResult;
 import dev.cerbos.sdk.builders.AttributeValue;
 import dev.cerbos.sdk.builders.Principal;
 import dev.cerbos.sdk.builders.Resource;
@@ -31,84 +30,86 @@ public class ProfileController {
 
     @GetMapping("/get/{profileId}/{employeeId}")
     public ResponseEntity<String> getProfile(@PathVariable String profileId, @PathVariable String employeeId) {
-
-        Profile profile = profileRepository.findById(Long.parseLong(profileId)).orElse(null);
-
+        Profile profile = getProfileOrNotFound(profileId);
         if (profile == null) {
-            return ResponseEntity.badRequest().body("Profile not found by ID: " + profileId);
+            return handleProfileNotFound();
         }
-        Employee employee = employeeRepository.findById(Long.parseLong(employeeId)).orElse(null);
 
+        Employee employee = getEmployeeOrNotFound(employeeId);
         if (employee == null) {
-            return ResponseEntity.badRequest().body("Employee not found by ID: " + employeeId);
+            return handleEmployeeNotFound();
         }
 
         Principal principal = Principal.newInstance(employeeId, employee.getRole())
                 .withAttribute("id", AttributeValue.stringValue(employeeId));
-
         Resource resource = Resource.newInstance("profile", profileId)
                 .withAttribute("owner", AttributeValue.stringValue(String.valueOf(profile.getEmployee().getEmployeeId())));
 
-        CheckResult result = cerbosBlockingClient.check(
-                principal,
-                resource,
-                "read");
-
-        if (!result.isAllowed("read")) {
-            log.debug("Not allowed to read!");
-            return ResponseEntity.status(403).body("Forbidden");
-        } else {
-            log.debug("Allowed to read!");
-            return ResponseEntity.ok().body(profile.getEmployee().toString());
-
+        if (!isAllowed("read", principal, resource)) {
+            log.debug("Not allowed to read profile");
+            return handleForbidden();
         }
 
+        return ResponseEntity.ok().body(profile.getEmployee().toString());
     }
 
     @DeleteMapping("/delete/{profileId}/{employeeId}")
     public ResponseEntity<String> deleteProfile(@PathVariable String profileId, @PathVariable String employeeId) {
-        try {
-            Profile profile = profileRepository.findById(Long.parseLong(profileId)).orElse(null);
-
-            if (profile == null) {
-                return ResponseEntity.badRequest().body("Profile not found by ID: " + profileId);
-            }
-            Employee employee = employeeRepository.findById(Long.parseLong(employeeId)).orElse(null);
-
-            if (employee == null) {
-                return ResponseEntity.badRequest().body("Employee not found by ID: " + employeeId);
-            }
-
-            Principal principal = Principal.newInstance(employeeId, employee.getRole());
-
-            Resource resource = Resource.newInstance("profile", profileId);
-
-            CheckResult result = cerbosBlockingClient.check(
-                    principal,
-                    resource,
-                    "delete");
-
-            if (!result.isAllowed("delete")) {
-                log.debug("Not allowed to delete!");
-                return ResponseEntity.status(403).body("Forbidden");
-            } else {
-                log.debug("Allowed to delete!");
-            }
-
-            profileRepository.deleteById(Long.valueOf(profileId));
-
-            boolean isDeleted = profileRepository.findById(Long.valueOf(profileId)).isEmpty();
-
-            if (isDeleted) {
-                return ResponseEntity.ok().body("Profile deleted successfully");
-            } else {
-                return ResponseEntity.internalServerError().body("Failed to delete profile");
-            }
-        } catch (Exception e) {
-            log.error("Error processing request: ", e);
-            return ResponseEntity.internalServerError().body("Error processing request: " + e.getMessage());
+        Profile profile = getProfileOrNotFound(profileId);
+        if (profile == null) {
+            return handleProfileNotFound();
         }
 
+        Employee employee = getEmployeeOrNotFound(employeeId);
+        if (employee == null) {
+            return handleEmployeeNotFound();
+        }
+
+        Principal principal = Principal.newInstance(employeeId, employee.getRole());
+        Resource resource = Resource.newInstance("profile", profileId);
+
+        if (!isAllowed("delete", principal, resource)) {
+            log.debug("Not allowed to delete profile");
+            return handleForbidden();
+        }
+
+        try {
+            profileRepository.deleteById(Long.valueOf(profileId));
+            boolean isDeleted = profileRepository.findById(Long.valueOf(profileId)).isEmpty();
+            return isDeleted ? ResponseEntity.ok().body("Profile deleted successfully") : ResponseEntity.internalServerError().body("Failed to delete profile");
+        } catch (Exception e) {
+            return handleInternalServerError(e);
+        }
+    }
+
+
+    private boolean isAllowed(String action, Principal principal, Resource resource) {
+        return cerbosBlockingClient.check(principal, resource, action).isAllowed(action);
+    }
+
+    private Profile getProfileOrNotFound(String profileId) {
+        return profileRepository.findById(Long.parseLong(profileId)).orElse(null);
+    }
+
+    private Employee getEmployeeOrNotFound(String employeeId) {
+        return employeeRepository.findById(Long.parseLong(employeeId)).orElse(null);
+    }
+
+    private ResponseEntity<String> handleProfileNotFound() {
+        return ResponseEntity.badRequest().body("Profile not found");
+    }
+
+    private ResponseEntity<String> handleEmployeeNotFound() {
+        return ResponseEntity.badRequest().body("Employee not found");
+    }
+
+    private ResponseEntity<String> handleForbidden() {
+        return ResponseEntity.status(403).body("Forbidden");
+    }
+
+    private ResponseEntity<String> handleInternalServerError(Exception e) {
+        log.error("Error processing request: ", e);
+        return ResponseEntity.internalServerError().body("Error processing request: " + e.getMessage());
     }
 
 }
