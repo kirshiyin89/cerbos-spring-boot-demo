@@ -2,7 +2,7 @@ version: "2.1"
 services:
   my-cerbos-container:
     container_name: my-cerbos-container
-    image: ghcr.io/cerbos/cerbos:0.34.0
+    image: ghcr.io/cerbos/cerbos:0.38.1
     ports:
       - "3592:3592"
       - "3593:3593"
