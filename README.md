@@ -1,5 +1,7 @@
 # This is a Demo Project for Demonstrating How to Secure a Spring Boot App Using Cerbos
 
+### This is a demo project for my article: https://semaphoreci.com/securing-a-spring-boot-application-with-cerbos
+
 ## How to run this project:
 
 1. Start Cerbos locally:
